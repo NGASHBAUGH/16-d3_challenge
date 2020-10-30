@@ -1,5 +1,5 @@
 // @TODO: YOUR CODE HERE!
-var svgWidth = 960;
+var svgWidth = 600;
 var svgHeight = 500;
 
 var margin = {
@@ -10,10 +10,10 @@ var margin = {
 };
 
 var svg = d3
-  .select("body")
+  .select("#scatter")
   .append("svg")
   .attr("width", svgWidth)
-  .attr("height", svgHeight);
+  .attr("height", svgHeight).style("border" , 'black solid thin').style('background-color' , 'beige');
 
 
 var width = svgWidth - margin.left - margin.right;
@@ -29,11 +29,6 @@ d3.csv("/assets/data/data.csv").then(function(Data){
       .domain([ .9*d3.min(Data, d => parseFloat(d.poverty)), 1.100* d3.max(Data, d => parseFloat(d.poverty))])
       .range([  0, width]);
 
-      console.log(d3.max(Data, d => +d.poverty))
-      console.log(d3.min(Data, d => +d.poverty))
-      console.log('Healthcare')
-      console.log(d3.max(Data, d => +d.healthcare))
-      console.log(d3.min(Data, d => +d.healthcare))
 
     var yHealth = d3.scaleLinear()
         .domain([.9* d3.min(Data, d => parseFloat(d.healthcare)), 1.1* d3.max(Data, d => parseFloat(d.healthcare))])
@@ -60,7 +55,7 @@ d3.csv("/assets/data/data.csv").then(function(Data){
     .attr("fill", "black");
     
     
-    svg.append('g').selectAll(".stateCircle").data(Data)
+    var circlesGroup = svg.append('g').selectAll(".stateCircle").data(Data)
       .enter().append('circle')
       .attr('class' , 'stateCircle').attr('r' , '10')
       .attr('cx' , d => xPov(d.poverty)+margin.left)
@@ -90,20 +85,29 @@ d3.csv("/assets/data/data.csv").then(function(Data){
 
         // title
         chartGroup.append('text')
-        .attr('y' , 0 -25 )
+        .attr('y' , 0 -15 )
         .attr('x' , 0+ width /2.5)
         .attr('dy' , '1em')
         .attr('class' , 'axisText')
         .text('Healthcare Vs Poverty')
         .attr( 'class' , 'label');
 
+        var toolTip = d3.tip() 
+        .attr("class", "tooltip")
+        .style('background-color' , 'lightgrey')
+        .offset([80, -60])
+        .html(function(d) {
+          return  `State: ${d.state}<br>Poverty: ${d.poverty}%<br>Healthcare: ${d.healthcare}%<br>`; 
+      });
 
-      // Add X label
-
-      // Add Y label
-
-
-
+      chartGroup.call(toolTip)
+      circlesGroup.on("mouseover", function(data) {
+        toolTip.show(data, this);
+      })
+        // onmouseout event
+        .on("mouseout", function(data) {
+          toolTip.hide(data);
+        });
 
 })
 
